@@ -16,5 +16,10 @@ def hello():
     counter = str(redis.get('hits'),'utf-8')
     return "This webpage has been viewed "+counter+" time(s)"
 
+# Added this block for health checks
+@app.route('/health')
+def health():
+    return "ok", 200
+
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=8000, debug=True)
