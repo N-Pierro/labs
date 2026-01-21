@@ -7,7 +7,7 @@ on:
 
 env:
   AWS_REGION: ${{ secrets.AWS_REGION }}
-  AWS_CLUSTER_NAME: ${{ secret.EKS_CLUSTER_NAME }}
+  AWS_CLUSTER_NAME: ${{ secrets.EKS_CLUSTER_NAME }}
   ECR_REPO: project-devops/flask-web
   IMAGE_TAG: ${{ github.sha }}
 
@@ -24,8 +24,8 @@ jobs:
         uses: aws-actions/configure-aws-credentials@v4
         with:
           aws-access-key-id: ${{ secretes.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secret.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ${{ secrets.AWS_REGION }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${AWS_REGION}
 
       # Login to ECR 
       - name: Login to Amazon ECR 
@@ -35,7 +35,7 @@ jobs:
       - name: Build and push image 
         working-directory: flask-web
         run: | 
-          IMAGE_URI=${{ secret.AWS_ACCOUNT_ID }}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_REPO}:${IMAGE_TAG}
+          IMAGE_URI=${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_REPO}:${IMAGE_TAG}
           docker build -t $IMAGE_URI .
           docker push $IMAGE_URI 
           echo "IMAGE_URI=$IMAGE_URI" >> $GITHUB_ENV
