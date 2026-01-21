@@ -1,0 +1,40 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}-web
+spec:
+  replicas: {{ .Values.web.replicaCount }}
+  selector:
+    matchLabels:
+      app: {{ .Release.Name }}-web
+  template:
+    metadata:
+      labels: 
+        app: {{ .Release.Name }}-web
+    spec:
+      containers:
+        - name: flask-web
+          image: "{{ .Values.web.image.repository}}:{{ .Values.web.image.tag}}"
+          ports:
+            - containerPort: {{ .Values.web.containerPort}}
+          envFrom:
+            - configMapRef:
+                name: {{ .Release.Name }}-web-config
+          readinessProbe:
+            httpGet:
+              path: {{ .Values.web.health.path }}
+              port: {{ .Values.web.containerPort }}
+            initialDelaySeconds: {{ .Values.web.health.readinessDelay }}
+          livenessProbe:
+            httpGet:
+              path: {{ .Values.web.health.path }}
+              port: {{ .Values.web.containerPort }}
+            initialDelaySeconds: {{ .Values.web.health.livenessDelay }}
+            periodSeconds: {{ .Values.web.health.period }}
+          resources:
+            requests:
+              cpu: {{ .Values.web.resources.requests.cpu }}
+              memory: {{ .Values.web.resources.requests.memory }}
+            limits:
+              cpu: {{ .Values.web.resources.limits.cpu }}
+              memory: {{ .Values.web.resources.limits.memory }} 

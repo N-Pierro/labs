@@ -47,25 +47,45 @@ see: aws ecr help
     
     - Firts Authenticate docker to ECR. This uses temporary auth token
 
-        ` aws ecr get-login-password --region eu-central-1 | docker login --username AWS --password-stdin account-id.dkr.ecr.eu-central-1.amazonaws.com`
+        ```sh
+        aws ecr get-login-password --region eu-central-1 | docker login --username AWS --password-stdin <account-id>.dkr.ecr.eu-central-1.amazonaws.com
+        ```
 
-    build image with docker: 
+    build and tag image with docker: 
 
     `docker tag -t image-name:latest`
 
-    Tag image for ecr:
+    Run docker image ls to get image(s) present in your local system:
+
+    `docker image ls` 
+
+    output:
+
+    docker image ls
+
+REPOSITORY   |                                                     TAG            |                                                           IMAGE ID |        CREATED |         SIZE |
+
+flask-web |                                                                 dev |                                                                      443663845f9f |  46 seconds ago |  414MB |
+
+
+Tag image for ecr:
      
-    `docker tag image-name:latest account-id.dkr.ecr.eu-central-1.amazonaws.com:latest`
+    `ddkr.ecr.eu-central-1.amazonaws.com/project-devops/flask-web:latest`
 
-    Push image to ecr:
+check image:
 
-    `docker push account-id.dkr.ecr.eu-central-1.amazonaws.com:latest`
+`docker image ls` 
 
-    Update kubernetes deployment to use ecr image:
+Push image to ecr:
+
+    `docker push account-it.dkr.ecr.eu-central-1.amazonaws.com/project-devops/flask-web:latest`
+
+
+Update kubernetes deployment to use ecr image:
 
     `image: your-image:latest`
 
-    example:
+example:
 
     `image: 123456789012.dkr.ecr.eu-central-1.amazonaws.com/flask-web:latest`
 
@@ -80,7 +100,7 @@ AWS eks is managed aws cluster. The cluster is made of 2 parts:
 
 ### Create eks cluster (CLI)
 
-`eksctl create cluster --name flask-cluster --region eu-central-1 --nodegroup-name general-ng-v1 --node-type t3.medium --nodes 2 `
+`eksctl create cluster --name flask-cluster --region eu-central-1 --nodegroup-name general-ng-v1 --node-type t3.small --nodes 2 `
 
 ### Delete cluster aggressively
 
@@ -219,6 +239,21 @@ By default kubernetes aws eks cluster creates:
 - Kube-proxy
 - Amazon-vpc CNI
 
+Check for namespaces:
+
+`kubectl get ns` or `kubectl get namespace` or `kubectl get ns -o wide`
+
+Show clusters that exist in AWS, regardless of kubeconfig
+
+`aws eks list-cluster --region eu-central-1`
+
+Describe a specific cluster:
+
+`aws eks describe-cluster --name flask-cluster --region eu-central-1`
+
+Verify the cluster is reachable:
+
+`kubectl cluster-info`
 
 
 
@@ -229,9 +264,7 @@ By default kubernetes aws eks cluster creates:
 run:
 
 ```sh
-aws cloudformation list-stacks \
-  --stack-status-filter CREATE_FAILED ROLLBACK_COMPLETE ROLLBACK_FAILED \
-  --region eu-central-1
+aws cloudformation list-stacks --stack-status-filter CREATE_FAILED ROLLBACK_COMPLETE ROLLBACK_FAILED --region eu-central-1
 ```
 
 Look for the stack name like:
@@ -260,11 +293,7 @@ copy the StackName
 Replace <StackName>:
 
 ```sh 
-aws cloudformation describe-stack-events \
-  --stack-name <STACK_NAME> \
-  --region eu-central-1 \
-  --query 'StackEvents[?ResourceStatus==`CREATE_FAILED`].[LogicalResourceId,ResourceType,ResourceStatusReason]' \
-  --output table
+aws cloudformation describe-stack-events --stack-name <StackName> --region eu-central-1 --query 'StackEvents[?ResourceStatus==`CREATE_FAILED`].[LogicalResourceId,ResourceType,ResourceStatusReason]' --output table
 ```
 output:
 
@@ -276,3 +305,83 @@ Reson for failure:
 `InvalidParameterCombination - The specified instance type is not eligible for Free Tier`
 
 
+
+
+## Helm 
+
+helm install team1-dev ./web-stack \
+  -f values-dev.yaml \
+  -n team1-dev \
+  --create-namespace
+
+
+### Render file to check it matches the kubernetes manifest file:
+
+`helm template team1-dev . -f values-dev.yaml`
+
+Dry-run against kubernetes: 
+
+```sh
+helm template . -f values-dev.yaml | kubectl apply --dry-run=client -f -
+```
+output: 
+
+```sh
+configmap/release-name-web-config created (dry run)
+service/release-name-redis created (dry run)
+service/release-name created (dry run)
+deployment.apps/release-name-redis created (dry run)
+deployment.apps/release-name-web created (dry run)
+```
+
+re-run: 
+
+`helm upgrade --install team1-dev . -f values-dev.yaml -n team1-dev`
+
+
+List release across all namespaces:
+
+`helm list -A`
+
+## Debug
+
+To test from locally (open 2 terminals):
+
+1. on one run: `kubectl port-forward service/team1-dev 8000:8000 -n team1-dev`
+2. on the other run: `curl http://localhost:8000/health`
+
+
+<details>
+<summary><strong> Phase 4 (CI/CD) end-t0-end automation </strong></summary>
+
+- **CI/CD with Github Actions (ECR -> EKS -> Helm)**
+
+    - Build the Flask image 
+    - Pushes it to Amazon ECR
+    - Deploy it to EKS using Helm
+    - Requires no manual kubectl or helm command 
+
+            git push
+    
+               ↓
+
+           GitHub Actions
+    
+                ↓
+    
+            Docker build
+    
+                ↓
+    
+            Amazon ECR
+    
+                ↓
+    
+            Helm upgrade
+    
+                ↓
+    
+               EKS
+
+
+</details>

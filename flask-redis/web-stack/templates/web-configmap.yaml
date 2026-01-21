@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Release.Name}}-web-config
+data:
+  REDIS_HOST: {{ .Values.redis.serviceName }}
+  REDIS_PORT: "{{ .Values.redis.port }}"

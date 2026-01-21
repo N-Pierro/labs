@@ -1,0 +1,6 @@
+web:
+  replicaCount: 2
+  image:
+    tag: "1.0.0"
+  service:
+    type: LoadBalancer 

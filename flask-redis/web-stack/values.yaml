@@ -1,0 +1,33 @@
+web:
+  replicaCount: 1
+  containerPort: 8000
+
+  image:
+    repository: 207630839131.dkr.ecr.eu-central-1.amazonaws.com/project-devops/flask-web
+    tag: latest
+
+  service:
+    type: NodePort
+    port: 8000
+
+  health:
+    path: /health
+    readinessDelay: 5
+    livenessDelay: 15
+    period: 10
+
+  resources:
+    requests:
+      cpu: "100m"
+      memory: "128Mi"
+    limits:
+      cpu: "200m"
+      memory: "250Mi"
+
+redis:
+  replicaCount: 1
+  image:
+    repository: redislabs/redismod
+    tag: latest
+  port: 6379
+  serviceName: redis
