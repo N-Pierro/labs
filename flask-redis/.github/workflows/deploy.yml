@@ -7,6 +7,7 @@ on:
 
 env:
   AWS_REGION: ${{ secrets.AWS_REGION }}
+  AWS_CLUSTER_NAME: ${{ secret.EKS_CLUSTER_NAME }}
   ECR_REPO: project-devops/flask-web
   IMAGE_TAG: ${{ github.sha }}
 
@@ -37,3 +38,28 @@ jobs:
           docker build -t $IMAGE_URI .
           docker push $IMAGE_URI 
           echo "IMAGE_URI=$IMAGE_URI" >> $GITHUB_ENV
+
+      # Setup kubectl 
+      - name: Setup kubectl
+        uses: azure/setup-kubectl@v4
+
+      # Setup Helm
+      - name: Setup Helm
+        uses: azure/setup-helm@v4
+
+      # update kubeconfig
+      - name: Update kubeconfig
+        run: |
+          aws eks update-kubeconfig \
+            --region $AWS_REGION
+            --name $AWS_CLUSTER_NAME
+
+      # Deploy with Helm
+      - name: Deploy with Helm 
+        run: |
+          helm upgrade --install web-dev ./web-stack \
+            -f ./web-stack/values-dev.yaml \
+            -n team-dev \
+            --set image.repository=${{ secret.AWS_ACCOUNT_ID }}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_REPO} \
+            --set image.tag=${IMAGE_TAG} \
+            --create-namespace
