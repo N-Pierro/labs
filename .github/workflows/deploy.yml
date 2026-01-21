@@ -33,7 +33,7 @@ jobs:
       
       # Build and push Docker image 
       - name: Build and push image 
-        working-directory: flask-web
+        working-directory: flask-redis
         run: | 
           IMAGE_URI=${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_REPO}:${IMAGE_TAG}
           docker build -t $IMAGE_URI .
