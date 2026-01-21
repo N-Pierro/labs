@@ -33,7 +33,6 @@ jobs:
       
       # Build and push Docker image 
       - name: Build and push image 
-        working-directory: flask-web
         run: | 
           IMAGE_URI=${{ secret.AWS_ACCOUNT_ID }}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_REPO}:${IMAGE_TAG}
           docker build -t $IMAGE_URI .
@@ -61,5 +60,6 @@ jobs:
           helm upgrade --install web-dev ./web-stack \
             -f ./web-stack/values-dev.yaml \
             -n team-dev \
-            --set web.image.tag=${IMAGE_TAG} \
+            --set image.repository=${{ secret.AWS_ACCOUNT_ID }}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_REPO} \
+            --set image.tag=${IMAGE_TAG} \
             --create-namespace
