@@ -1,13 +1,13 @@
 apiVersion: networking.k8s.io/v1
-kind: apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: {{ include "flask-app.fullname". }}
+  name: {{ .Release.Name }}-ingress
   annotations:
     kubernetes.io/ingress.class: alb 
-    alb.ingress.kubernetes.io/scheme: internet-facing
+    alb.ingress.kubernetes.io/scheme: {{ .Values.ingress.scheme }}
     alb.ingress.kubernetes.io/target-type: ip
     alb.ingress.kubernetes.io/listen-ports: '[{"HTTP":80},{"HTTPS":443}]'
+    alb.ingress.kubernetes.io/certificate-arn: arn:aws:acm:eu-central-1:207630839131:certificate/c608d757-afed-45b8-8ed4-f6852e1d4022
 spec:
   rules:
   - host: {{ .Values.ingress.host }}
@@ -17,6 +17,6 @@ spec:
           pathType: Prefix
           backend:
             service:
-              name: {{ include "flask-app.fullname". }}
+              name: {{ .Release.Name }}-web 
               port: 
                 number: {{ Values.service.port }}

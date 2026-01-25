@@ -56,8 +56,8 @@ jobs:
       # Deploy with Helm
       - name: Deploy with Helm 
         run: |
-          helm upgrade --install web-dev ./web-stack \
-            -f ./web-stack/values-dev.yaml \
-            -n team-dev \
+          helm upgrade --install web-prod ./web-stack \
+            -f ./web-stack/values-prod.yaml \
+            -n team-prod \
             --set web.image.tag=${IMAGE_TAG} \
             --create-namespace
