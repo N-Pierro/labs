@@ -7,7 +7,7 @@ web:
     tag: latest
 
   service:
-    type: NodePort
+    type: ClusterIP
     port: 8000
 
   health:
@@ -31,3 +31,8 @@ redis:
     tag: latest
   port: 6379
   serviceName: redis
+
+ingress:
+  enabled: false 
+  scheme: internet-facing 
+  host: ""

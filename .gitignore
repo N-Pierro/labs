@@ -1,1 +1,7 @@
 .env
+
+# ecr lifecycle policy
+ecr-lifecycle-policy.json
+
+# iam policy
+./flask-redis/iam_policy.json
