@@ -4,5 +4,8 @@ web:
     tag: "1.0.0"
   service:
     type: ClusterIP
-  ingress:
-    enabled: true 
+    port: 8000
+ingress:
+  enabled: true 
+  scheme: internet-facing 
+  host: app.pierro.com

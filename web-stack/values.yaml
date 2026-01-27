@@ -31,8 +31,8 @@ redis:
     tag: latest
   port: 6379
   serviceName: redis
-
+ 
 ingress:
-  enabled: false 
-  scheme: internet-facing 
-  host: ""
+  enabled: false
+  scheme: internal
+ 

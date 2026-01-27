@@ -61,3 +61,4 @@ jobs:
             -n team-prod \
             --set web.image.tag=${IMAGE_TAG} \
             --create-namespace
+            --set ingress.certificateArn=${{ secrets.ACM_CERT_ARN }}
